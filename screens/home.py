@@ -1,10 +1,9 @@
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.image import Image
-from kivy.uix.slider import Slider
-from kivy.uix.label import Label
-from kivy.uix.screenmanager import Screen, ScreenManager
+from kivy.uix.button import Button
 from kivy.clock import Clock
+from kivy.uix.screenmanager import Screen, ScreenManager
 
 class HomeScreen(Screen):
     def __init__(self, **kwargs):
@@ -15,58 +14,38 @@ class ImageSlider(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.orientation = 'vertical'
-        
-        # Image widget
-        self.image = Image(source='images/ssk1.png', size_hint=(1, 10))
+        self.padding = 0 
+        self.spacing = 0  
+
+        # Image widget with responsive height
+        self.image = Image(source='images/ssk1.png', 
+                           allow_stretch=True, 
+                           keep_ratio=True,  # Maintain aspect ratio
+                           size_hint=(1, 0.7))  # 70% height for image
         self.add_widget(self.image)
 
-        # Slider widget
-        self.slider = Slider(min=0, max=4, value=0)  # Change max to 4 for 5 images
-        self.slider.bind(value=self.on_slider_value_change)
-        self.add_widget(self.slider)
+        # BoxLayout for boxes below the image
+        boxes_layout = BoxLayout(orientation='vertical', size_hint=(1, 0.3))  # 30% height for boxes
 
-        # Label widget (optional)
-        self.label = Label(text='Select an image using the slider', size_hint=(1, 0.2))
-        self.add_widget(self.label)
+        # Create 3 boxes (buttons in this case)
+        for i in range(3):
+            box = Button(text=f'Box {i + 1}', size_hint=(1, None), height='48dp')  # Use dp for consistent button height
+            boxes_layout.add_widget(box)
+
+        self.add_widget(boxes_layout)
 
         # Start automatic image change
         Clock.schedule_interval(self.auto_change_image, 2)  # Change every 2 seconds
         self.current_image_index = 0
 
-    def on_slider_value_change(self, slider, value):
-        self.current_image_index = int(value)
-        self.update_image_and_label()
-
     def update_image_and_label(self):
-        # Update images and labels based on current index
-        if self.current_image_index == 0:
-            self.image.source = 'images/ssk1.png'
-            self.label.text = 'Image 1'
-        elif self.current_image_index == 1:
-            self.image.source = 'images/ssk2.png'
-            self.label.text = 'Image 2'
-        elif self.current_image_index == 2:
-            self.image.source = 'images/ssk3.png'
-            self.label.text = 'Image 3'
-        elif self.current_image_index == 3:
-            self.image.source = 'images/ssk4.png'
-            self.label.text = 'Image 4'
-        elif self.current_image_index == 4:
-            self.image.source = 'images/ssk5.png'
-            self.label.text = 'Image 5'
-
-        self.image.reload()
+        # List of image sources
+        image_files = [f'images/ssk{i + 1}.png' for i in range(9)]
+        
+        if 0 <= self.current_image_index < len(image_files):
+            self.image.source = image_files[self.current_image_index]
+            self.image.reload()  # Reload the image to reflect the change
 
     def auto_change_image(self, dt):
-        self.current_image_index = (self.current_image_index + 1) % 5  # Loop through 5 images
-        self.slider.value = self.current_image_index  # Update slider position
+        self.current_image_index = (self.current_image_index + 1) % 5  # Loop through 9 images
         self.update_image_and_label()
-
-class MyApp(App):
-    def build(self):
-        sm = ScreenManager()
-        sm.add_widget(HomeScreen(name='home'))
-        return sm
-
-if __name__ == '__main__':
-    MyApp().run()
